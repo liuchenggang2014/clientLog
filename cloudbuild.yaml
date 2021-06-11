@@ -1,0 +1,60 @@
+# In this directory, run the following command to build this builder.
+# $ gcloud builds submit . --config=cloudbuild.yaml --substitutions _BUCKET='<bucket name>'
+steps:
+#1: build the get token image
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', '${_IMAGE_NAME}', '.']
+
+#2. Push the container image to Container Registry
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', '${_IMAGE_NAME}']
+
+#3. terraform init
+- name: 'gcr.io/${PROJECT_ID}/terraform'
+  args: ['init',
+    '-backend-config=bucket=${_BUCKET}']
+  env:
+    - "TF_VAR_project-name=${PROJECT_ID}"
+    - "TF_VAR_region=${_REGION}"
+
+#4. terraform plan and apply 
+- name: 'gcr.io/${PROJECT_ID}/terraform'
+  args: ['plan']
+  env:
+    - "TF_VAR_project-name=${PROJECT_ID}"
+    - "TF_VAR_region=${_REGION}"
+    - "TF_VAR_image-name=${_IMAGE_NAME}"
+    - "TF_VAR_sa-mail=${_SA_MAIL}"
+
+- name: 'gcr.io/${PROJECT_ID}/terraform'
+  args: ['apply', '-auto-approve']
+  env:
+    - "TF_VAR_project-name=${PROJECT_ID}"
+    - "TF_VAR_region=${_REGION}"
+    - "TF_VAR_image-name=${_IMAGE_NAME}"
+    - "TF_VAR_sa-mail=${_SA_MAIL}"
+
+#5. destroy it if you don't need it anymore
+# - name: 'gcr.io/${PROJECT_ID}/terraform'
+#   args: ['destroy', '-auto-approve']
+#   env:
+#     - "TF_VAR_project-name=${PROJECT_ID}"
+
+#3---4 options. leverage gcloud command to deploy cloud run
+# - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+#   entrypoint: gcloud
+#   args: ['run', 'deploy', 'get-token-gcloud', '--image', '${_IMAGE_NAME}', 
+#   '--region', 'us-central1', '--platform', 'managed', '--allow-unauthenticated', '--port=3000',
+#   '--service-account=${_SA_MAIL}'] 
+
+# push the image into registry
+images:
+- ${_IMAGE_NAME}
+
+substitutions:
+  _BUCKET: cliu201-tf-backend
+  _REGION: us-central1
+  _IMAGE_NAME: gcr.io/cliu201/gettoken
+  _SA_MAIL: cliu201-sa@cliu201.iam.gserviceaccount.com
+tags: ['cloud-get-token']
+timeout: 1000s
