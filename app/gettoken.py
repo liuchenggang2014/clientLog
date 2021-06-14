@@ -6,6 +6,7 @@ import os
 import io
 import json
 import base64
+import requests
 
 # Service account key path from ADC
 # credential_path = os.environ['GOOGLE_APPLICATION_CREDENTIALS']
@@ -23,7 +24,7 @@ with io.open(sa_keyfile, "r", encoding="utf-8") as json_file:
     data = json.loads(json_file.read())
     sa_email=data['client_email']
 
-# Generate the Json Web Token 
+# Generate the Json Web Token from sa json file
 def generate_jwt(sa_keyfile,
                  sa_email,
                  audience,
@@ -55,6 +56,20 @@ def generate_jwt(sa_keyfile,
     #print(jwt_token.decode('utf-8'))
     return jwt_token.decode('utf-8')
 
+# https://cloud.google.com/run/docs/securing/service-identity#access_tokens
+def generateAccessToken():
+    # Request Headers
+    headers = {
+        'Metadata-Flavor': 'Google'
+    }
+
+    url = 'http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token?scopes=https://www.googleapis.com/auth/pubsub'
+
+    # Get response data
+    response = requests.get(url, headers=headers)
+    print(response.text)
+    return response.text
+
 app = Flask(__name__)
 @app.route('/hello', methods=['GET', 'POST'])
 def welcome():
@@ -66,7 +81,8 @@ def hello():
 
 @app.route('/api', methods=['GET'])
 def api():
-    return generate_jwt(sa_keyfile, sa_email, audience)
+    # return generate_jwt(sa_keyfile, sa_email, audience)
+    return generateAccessToken()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000)

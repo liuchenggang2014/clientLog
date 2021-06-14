@@ -1,11 +1,15 @@
+from google.auth import jwt
 import requests
 import json
 import base64
 
+from requests.models import Response
+from werkzeug.datastructures import IfRange
+
 # Message data
 json_payload = [
     {
-        "id": "202006101600",
+        "id": "202006141124",
         "price": "$1.99",
         "product": "shirt"
 
@@ -76,10 +80,10 @@ def getToken():
         return ""
 
 # Publish the message
-def publish_with_jwt_request(signed_jwt, encoded_element, url):
+def publish_with_jwt_request(access_token, encoded_element, url):
     # Request Headers
     headers = {
-        'Authorization': 'Bearer {}'.format(signed_jwt),
+        'Authorization': 'Bearer {}'.format(access_token),
         'content-type': 'application/json'
     }
     # Request json data
@@ -87,7 +91,6 @@ def publish_with_jwt_request(signed_jwt, encoded_element, url):
         "messages": [
             {
                 "data": encoded_element,
-                "ordering_key": "first order",
                 "attributes": {"somekey": "somevalue"}
             }
         ]
@@ -95,20 +98,26 @@ def publish_with_jwt_request(signed_jwt, encoded_element, url):
 
     # Get response data
     response = requests.post(url, headers=headers, json=json_data)
+    if response.status_code == 401:
+        return 401
+
     print(response.status_code, response.content)
 
 
 def main():
-    jwt_token = getToken()
+    response = getToken()
+    access_token = json.loads(response)['access_token']
+    # print(jwt_token)
+    # print(a)
     for element in json_payload:
         dumped_element = json.dumps(element)
         message_bytes = dumped_element.encode('ascii')
         base64_bytes = base64.b64encode(message_bytes)
         encoded_element = base64_bytes.decode('ascii')
         print(encoded_element)
-        publish_with_jwt_request(jwt_token, encoded_element, topic_url)
+        publish_with_jwt_request(access_token, encoded_element, topic_url)
 
-
+        
 if __name__ == '__main__':
     main()
 

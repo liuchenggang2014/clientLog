@@ -51,6 +51,10 @@ steps:
 images:
 - ${_IMAGE_NAME}
 
+# _BUCKET: the bucket to store the terraform state for multiple update and maintain
+# _REGION: the region of cloud run deployment
+# _IMAGE_NAME: the image name to build contianer and deploy cloud run
+# _SA_MAIL: the service acccount bind to the cloud run service
 substitutions:
   _BUCKET: cliu201-tf-backend
   _REGION: us-central1

@@ -24,7 +24,7 @@ resource "google_cloud_run_service" "getToken" {
 
       # add it if you need a customized service account with your cloud run, otherwise your cloud 
       # run will use default cloud run's service account
-      # service_account_name = var.sa-mail
+      service_account_name = var.sa-mail
     }
   }
 }
