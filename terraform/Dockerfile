@@ -14,8 +14,4 @@ FROM gcr.io/cloud-builders/gcloud
 COPY --from=build terraform /usr/bin/terraform
 COPY entrypoint.bash /builder/entrypoint.bash
 
-# added by cliu to add the models and precessor file into the terraform docker
-COPY model.joblib /model.joblib
-COPY preprocessor.pkl /preprocessor.pkl
-
 ENTRYPOINT ["/builder/entrypoint.bash"]
