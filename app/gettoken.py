@@ -12,7 +12,7 @@ import requests
 # credential_path = os.environ['GOOGLE_APPLICATION_CREDENTIALS']
 # os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credential_path
 
-sa_keyfile = './cliu201-pubsub.json'
+# sa_keyfile = './cliu201-pubsub.json'
 
 
 # Audience 
