@@ -16,47 +16,48 @@ sa_keyfile = './cliu201-pubsub.json'
 
 
 # Audience 
-audience="https://pubsub.googleapis.com/google.pubsub.v1.Publisher"
+# audience="https://pubsub.googleapis.com/google.pubsub.v1.Publisher"
 # audience="https://pubsub.googleapis.com"
 
 # Get service account email and load the json data from the service account key file. 
-with io.open(sa_keyfile, "r", encoding="utf-8") as json_file:
-    data = json.loads(json_file.read())
-    sa_email=data['client_email']
+# with io.open(sa_keyfile, "r", encoding="utf-8") as json_file:
+#     data = json.loads(json_file.read())
+#     sa_email=data['client_email']
 
 # Generate the Json Web Token from sa json file
-def generate_jwt(sa_keyfile,
-                 sa_email,
-                 audience,
-                 expiry_length=3600):
+# def generate_jwt(sa_keyfile,
+#                  sa_email,
+#                  audience,
+#                  expiry_length=3600):
 
-    """Generates a signed JSON Web Token using a Google API Service Account."""
+#     """Generates a signed JSON Web Token using a Google API Service Account."""
 
-    now = int(time.time())
+#     now = int(time.time())
 
-    # build payload
-    payload = {
-        'iat': now,
-        # expires after 'expiry_length' seconds.
-        "exp": now + expiry_length,
-        # iss must match 'issuer' in the security configuration in your
-        # swagger spec (e.g. service account email). It can be any string.
-        'iss': sa_email,
-        # aud must be either your Endpoints service name, or match the value
-        # specified as the 'x-google-audience' in the OpenAPI document.
-        'aud':  audience,
-        # sub and email should match the service account's email address
-        'sub': sa_email,
-        'email': sa_email
-    }
+#     # build payload
+#     payload = {
+#         'iat': now,
+#         # expires after 'expiry_length' seconds.
+#         "exp": now + expiry_length,
+#         # iss must match 'issuer' in the security configuration in your
+#         # swagger spec (e.g. service account email). It can be any string.
+#         'iss': sa_email,
+#         # aud must be either your Endpoints service name, or match the value
+#         # specified as the 'x-google-audience' in the OpenAPI document.
+#         'aud':  audience,
+#         # sub and email should match the service account's email address
+#         'sub': sa_email,
+#         'email': sa_email
+#     }
 
-    # sign with keyfile
-    signer = crypt.RSASigner.from_service_account_file(sa_keyfile)
-    jwt_token = jwt.encode(signer, payload)
-    #print(jwt_token.decode('utf-8'))
-    return jwt_token.decode('utf-8')
+#     # sign with keyfile
+#     signer = crypt.RSASigner.from_service_account_file(sa_keyfile)
+#     jwt_token = jwt.encode(signer, payload)
+#     #print(jwt_token.decode('utf-8'))
+#     return jwt_token.decode('utf-8')
 
 # https://cloud.google.com/run/docs/securing/service-identity#access_tokens
+# generate access tokey by cloudrun's metadata 
 def generateAccessToken():
     # Request Headers
     headers = {
